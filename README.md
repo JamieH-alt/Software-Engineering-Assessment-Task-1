@@ -5,3 +5,4 @@ This project is a small project that stores all the IMDb movies that you have wa
 # Installation 
 
 Clone the project and run requirements.txt and then main.py
+(API Link https://www.themoviedb.org/settings/api)
