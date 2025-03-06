@@ -73,3 +73,72 @@
 ![](theorystorage/Jamie%20Hanson%20-%20Software%20Engineering%20-%202025%2003%205%20-%20MovieLister%20Gantt%20Chart.png)
 ### **Structure Chart**
 ![](theorystorage/Jamie%20Hanson%20-%20Software%20Engineering%20-%202025%2003%205%20-%20MovieLister%20Structure%20Chart.png)
+### **Pseudocode / Algorithms**
+
+Main System
+```{r, tidy=FALSE, eval=FALSE, highlight=FALSE }
+BEGIN MovieListerSystemMain
+  FOR movie = firstMovie TO lastMovie STEP watchedMovies()
+    Display movie title
+    Display movie cover
+  NEXT movie
+
+  IF movie clicked THEN
+    movieclicked (movie)
+  ENDIF
+
+  IF movie searched THEN
+    moviesearched (title)
+  ENDIF
+
+  IF helpclicked THEN
+    Display Help Text
+  ENDIF
+END MovieListerSystemMain
+```
+
+
+
+Watched Movies
+```{r, tidy=FALSE, eval=FALSE, highlight=FALSE }
+BEGIN watchedMovies
+  movielist = read(watchedmovies.json)
+  FOR movie = firstmovie in movielist TO lastmovie in movielist STEP 1
+    movietitle = read(movie, title)
+    moviecover = read(movie, cover)
+    movieid = movie
+    RETURN movietitle, moviecover, movieid
+  NEXT movie 
+END watchedMovies
+```
+
+Preview Movie
+```{r, tidy=FALSE, eval=FALSE, highlight=FALSE }
+BEGIN previewMovie (movie_id, description, title, genreids, coverimage, rating)
+  Display movie_id
+  Display description
+  Display title
+  Display coverimage
+  Display rating
+  CASEWHERE genreid exvalues to
+    28: genre = Action
+    12: genre = Adventure
+    16: genre = Animation
+    35: genre = Comedy
+    80: genre = Crime
+    99: genre = Documentary
+    18: genre = Drama
+    10751: genre = Family
+    14: genre = Fantasy
+    36: genre = History
+    27: genre = Horror
+    10402: genre = Music
+    9648: genre = Mystery
+    10749: genre = Romance
+    878: genre = SciFi
+    53: genre = Thriller
+    10752: genre = war
+    37: genre = western
+  ENDCASE
+  Display genre
+END previewMovie (movie_id, description, title, genreids, coverimage, rating)
