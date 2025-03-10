@@ -96,49 +96,64 @@ BEGIN MovieListerSystemMain
   ENDIF
 END MovieListerSystemMain
 ```
-
+![](theorystorage/Jamie%20Hanson%20-%20Software%20Engineering%20-%202025%2003%2010%20-%20Flowchart%20-%20MovieListerSystemMain.png)
 
 
 Watched Movies
 ```{r, tidy=FALSE, eval=FALSE, highlight=FALSE }
 BEGIN watchedMovies
   movielist = read(watchedmovies.json)
-  FOR movie = firstmovie in movielist TO lastmovie in movielist STEP 1
+  movie = firstmovie
+  REPEAT
     movietitle = read(movie, title)
-    moviecover = read(movie, cover)
+    moviecover = read(move, cover)
     movieid = movie
+    movie = nextmovie
     RETURN movietitle, moviecover, movieid
-  NEXT movie 
+  UNTIL movie = lastmovie
 END watchedMovies
 ```
+![](theorystorage/Jamie%20Hanson%20-%20Software%20Engineering%20-%202025%2003%2010%20-%20Flowchart%20-%20Watched%20Movies.png)
 
 Preview Movie
 ```{r, tidy=FALSE, eval=FALSE, highlight=FALSE }
-BEGIN previewMovie (movie_id, description, title, genreids, coverimage, rating)
-  Display movie_id
+BEGIN previewMovie (movieid, description, title, genreids, coverimage, rating)
+  Display movieid
   Display description
   Display title
   Display coverimage
   Display rating
-  CASEWHERE genreid exvalues to
-    28: genre = Action
-    12: genre = Adventure
-    16: genre = Animation
-    35: genre = Comedy
-    80: genre = Crime
-    99: genre = Documentary
-    18: genre = Drama
-    10751: genre = Family
-    14: genre = Fantasy
-    36: genre = History
-    27: genre = Horror
-    10402: genre = Music
-    9648: genre = Mystery
-    10749: genre = Romance
-    878: genre = SciFi
-    53: genre = Thriller
-    10752: genre = war
-    37: genre = western
-  ENDCASE
-  Display genre
+  FOR thisgenre = first in genreids TO last in genreids STEP next genreids
+    CASEWHERE thisgenre evaluates to
+      28: genre = Action
+      12: genre = Adventure
+      16: genre = Animation
+      35: genre = Comedy
+      80: genre = Crime
+      99: genre = Documentary
+      18: genre = Drama
+      10751: genre = Family
+      14: genre = Fantasy
+      36: genre = History
+      27: genre = Horror
+      10402: genre = Music
+      10749: genre = Romance
+      878: genre = SciFi
+      53: genre = Thriller
+      10752: genre = War
+      37: genre = Western
+    ENDCASE
+    Display genre
+  NEXT thisgenre
 END previewMovie (movie_id, description, title, genreids, coverimage, rating)
+```
+![](theorystorage/Jamie%20Hanson%20-%20Software%20Engineering%20-%202025%2003%2010%20-%20Flowchart%20-%20Preview%20Movie.png)
+
+### **Data Dictionary**
+| **Variable** | **Data Type** | **Format for Display** | **Size in Bytes** | **Size for Display** | **Description** | **Example** | **Validation** |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| movieid | Integer | NNNNNNN | 4 | 7 | The movie id that is used within the TMDb database | 5039482 | All characters are numbers |
+| moviecoverimage | JPEG (image) | Full Image at w400xh600 resolution, 8 bit colours (256) | 240000 | 10% width of screen, 15% height per image | These are cover images stored within the file system of a users computer for all watched movies, they will also be temporarily downloaded when the user previews a movie. | ![](theorystorage/Jamie%20Hanson%20-%20Software%20Engineering%20-%202025%2003%2010%20-%20Data%20Dictionary%20-%20Cover%20Image%20Example.jpg) | N/A |
+| moviecoverimagelocation | FilePath | Drive://Directory/movieid.jpg | 4 | 5-256 | The file path to locate the moviecoverimage storage location, this lets the program directly access it | C://Documents/MovieLister/coverimages/5039482.jpg | There is a jpg file at that location |
+| movietitle | String | X..X | 4 | 1-1000 | The full movie title within the TMDb database | The Gentlemen | N/A | 
+
