@@ -2,4 +2,12 @@ customtkinter
 math
 requests
 Image
+pillow
+tmdbsimple
 os
+threading
+pywinstyles
+json
+concurrent.futures
+sys
+platform
