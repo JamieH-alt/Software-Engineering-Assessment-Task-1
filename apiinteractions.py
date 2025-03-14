@@ -1,7 +1,7 @@
 import tmdbsimple as tmdb
 import customtkinter
 
-tmdb.API_KEY = '#'
+tmdb.API_KEY = '8295c16817d7dbb5f94ba36baa7c04cf'
 tmdb.REQUESTS_TIMEOUT = 5
 
 def searchmovie(content: str):

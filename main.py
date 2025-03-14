@@ -80,7 +80,9 @@ class MovieFrame(customtkinter.CTkFrame):
         if empty:
             self.image = Images.open(os.path.dirname(os.path.realpath(__file__)) + r"\\storage\\empty.png")
         else:
-            self.image = Images.open(requests.get(cover_master_location + StoredMovie.coverstoragelocation, stream=True).raw)
+            self.image = Images.open(os.path.dirname(os.path.realpath(__file__)) + r"\\storage\\unloaded.png")
+            #self.image = Images.open(requests.get(cover_master_location + StoredMovie.coverstoragelocation, stream=True).raw)
+            #self.image.after_idle(lambda: self.image.configure())
         self.cover = customtkinter.CTkImage(self.image,size=(200, 300))
 
         if empty:
@@ -90,6 +92,11 @@ class MovieFrame(customtkinter.CTkFrame):
         self.label._label.config(bd=3, relief="solid", compound="top")
         self.label._label.configure(wraplength=200)
         self.label.grid(row=0, column=0)
+
+        if not empty:
+            t1 = threading.Thread(target=MovieCover, args=(self.label, StoredMovie.coverstoragelocation))
+            t1.start()
+        
 
         if not empty:
             # Movie Preview Button
@@ -113,7 +120,9 @@ class MovieFrame(customtkinter.CTkFrame):
 def MovieCover(label, coverstoragelocation):
     cover_master_location = 'https://image.tmdb.org/t/p/original/'
     image = Images.open(requests.get(cover_master_location + coverstoragelocation, stream=True).raw)
-    return customtkinter.CTkImage(image, size=(200, 300))
+    cover = customtkinter.CTkImage(image, size=(200,300))
+    label.after_idle(lambda: label.configure(image=cover))
+    #return customtkinter.CTkImage(image, size=(200, 300))
         
 # The Movie Preview Claim
 class MoviePreviewWindow(customtkinter.CTkToplevel):
@@ -128,23 +137,10 @@ class MoviePreviewWindow(customtkinter.CTkToplevel):
         self.maxsize(1280, 720)
         self.title(movie['title'])
 
-        if not isinstance(movie['backdrop_path'], type(None)):
-            self.image = Images.open(requests.get(cover_master_location + movie['backdrop_path'], stream=True).raw)
-        
-            source = self.image.split() #Here i'm going through an making the background image darker, so it's less standout. 
-            R, G, B = 0, 1, 2
-            constant = 1.5
-            Red = source[R].point(lambda i: i/constant)
-            Green = source[G].point(lambda i: i/constant)
-            Blue = source[B].point(lambda i: i/constant)
-            self.image = Images.merge(self.image.mode, (Red, Green, Blue))
-            
-            # Now sets the darkend image as the background (CustomTkinter and Tkinter require images to be put as labels for whater stupid reason.
-            self.backgroundimage = customtkinter.CTkImage(self.image, size=(1280, 720))
-            self.backgroundlabel = customtkinter.CTkLabel(self, text="", image=self.backgroundimage)
-            self.backgroundlabel.place(x=0,y=0)
-        else:
-            self.backgroundlabel = self
+        self.image = Images.open(os.path.dirname(os.path.realpath(__file__)) + r"\\storage\\emptybackground.png")
+        self.backgroundimage = customtkinter.CTkImage(self.image, size=(1280, 720))
+        self.backgroundlabel = customtkinter.CTkLabel(self, text="", image=self.backgroundimage)
+        self.backgroundlabel.place(x=0,y=0) # The image will be added with mutlitrheading later.
 
         # Now Sets up the title display etc.
         self.titlelabel = customtkinter.CTkTextbox(self.backgroundlabel, font=("Bahnschrift", 55), width=700, height=50, fg_color="#282828", wrap="none")
@@ -163,10 +159,16 @@ class MoviePreviewWindow(customtkinter.CTkToplevel):
         self.overview.place(relx=0.025,rely=0.21)
 
         # Setting up the cover image
-        self.cover = Images.open(requests.get(cover_master_location + movie['poster_path'], stream=True).raw)
+        self.cover = Images.open(os.path.dirname(os.path.realpath(__file__)) + r"\\storage\\unloaded.png")
         self.coverctk = customtkinter.CTkImage(self.cover, size=(200, 300))
         self.coverlabel = customtkinter.CTkLabel(self.backgroundlabel, text="", image=self.coverctk)
         self.coverlabel.place(relx=0.8,rely=0.1)
+
+        if not isinstance(movie['backdrop_path'], type(None)):
+            t2 = threading.Thread(target=BackgroundImage, args=(self.backgroundlabel, movie['backdrop_path']))
+            t3 = threading.Thread(target=MovieCover, args=(self.coverlabel, movie['poster_path']))
+            t2.start()
+            t3.start()
 
         # Setting up the vote score (rating)
         self.votinglabel = customtkinter.CTkLabel(self.backgroundlabel, font=("Bahnschrift", 40), text="Rating: " + str(round(movie['vote_average'], 1)) + "/10", fg_color="#282828")
@@ -251,6 +253,23 @@ class MoviePreviewWindow(customtkinter.CTkToplevel):
         pywinstyles.set_opacity(self.genrelabel, value=0.8)
         pywinstyles.set_opacity(self.releaselabel, value=0.8)
         pywinstyles.set_opacity(self.tmdbidlabel, value=0.8)
+
+# Another function dedicated to manipulating stuff on threads.
+def BackgroundImage(backgroundlabel, backdrop_path):
+    cover_master_location = 'https://image.tmdb.org/t/p/original/'
+    image = Images.open(requests.get(cover_master_location + backdrop_path, stream=True).raw)
+        
+    source = image.split() #Here i'm going through an making the background image darker, so it's less standout.
+    R, G, B = 0, 1, 2
+    constant = 1.5
+    Red = source[R].point(lambda i: i/constant)
+    Green = source[G].point(lambda i: i/constant)
+    Blue = source[B].point(lambda i: i/constant)
+    image = Images.merge(image.mode, (Red, Green, Blue))
+
+    # Now sets the darkend image as the background (CustomTkinter and Tkinter require images to be put as labels for whater stupid reason.
+    backgroundimage = customtkinter.CTkImage(image, size=(1280, 720))
+    backgroundlabel.after_idle(lambda: backgroundlabel.configure(image=backgroundimage)) # This is so we are threadsafe
 
 class ErrorWindow(customtkinter.CTkToplevel):
     def __init__(self, *args, **kwargs):
