@@ -12,12 +12,39 @@ def searchmovie(content: str):
     return search.results[0]
 
 def getmovie(id: int):
-    try:
-        movie = tmdb.Movies(id).info()
-        content = movie['title']
-        search = tmdb.Search()
-        response = search.movie(query=content)
-        return search.results[0]
-    except:
-        print("Error has occured!")
+    movie = tmdb.Movies(id).info()
+    movie["genre_ids"] = [genre["id"] for genre in movie["genres"]]
+    return movie
+
+def searchmovies(content: str):
+    search = tmdb.Search()
+    response = search.movie(query=content)
+    if len(search.results) < 1:
         return False
+    results = search.results
+    for movies in search.results:
+        movie = tmdb.Movies(movies["id"])
+        response = movie.releases()
+        test = False
+        for c in movie.countries:
+            if c['iso_3166_1'] == 'AU' and c['certification'] != '':
+                match c['certification']:
+                    case "G":
+                        test = True
+                    case "PG":
+                        test = True
+                    case "M":
+                        test = True
+                    case "MA 15+":
+                        test = True
+            elif c['iso_3166_1'] == 'US' and c['certification'] != '':
+                match c['certification']:
+                    case "PG":
+                        test = True
+                    case "PG-13":
+                        test = True
+                    case "G":
+                        test = True
+        if not test:
+            results.remove(movies)
+    return results
