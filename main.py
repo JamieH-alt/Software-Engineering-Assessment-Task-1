@@ -1,4 +1,5 @@
 import customtkinter
+import tkinter as tk
 import math
 import PIL.Image as Images
 import requests
@@ -11,6 +12,7 @@ import concurrent.futures
 import sys
 import platform
 import apiinteractions as api # This is my python API class (module or whatever you want to call it) because it says I have to :/
+import time
 
 # Sets the theme / appearance mode, so it doesnt follow the system (Forced dark mode because yes)
 customtkinter.set_default_color_theme("dark-blue")
@@ -40,22 +42,25 @@ class App(customtkinter.CTk):
 
         # Sets up so the search entry prints text on enter (To be linked to a function later)
         def moviesearched(event=None):
-            movie = api.searchmovie(self.search.get())
+            string = self.search.get()
+            movie = api.searchmovies(string)
             if movie == False:
                 frame = ErrorWindow(self)
                 timer = threading.Timer(0.2, frame.focus) # Simple Use of a threading timer so we don't impact the loading times with our focus time (For some reason ctk starts Toplevel windows... behind the window)
                 timer.start()
                 return
-            frame = MoviePreviewWindow(self, movie)
-            timer = threading.Timer(0.2, frame.focus)
+            window = SearchWindow(self, string, movie)
+            timer = threading.Timer(0.2, window.focus)
             timer.start()
+            #frame = MoviePreviewWindow(self, movie)
+            #timer = threading.Timer(0.2, frame.focus)
+            #timer.start()
             
         self.search.bind('<Return>', moviesearched)
 
         # Loads the WatchedMoviesFrame and sets its size and other variables
         self.watchedmoviesframe = WatchedMoviesFrame(self, width=1100, height=700, corner_radius=20, orientation="horizontal")
-        self.watchedmoviesframe.grid(pady=10,padx=10,row=1,column=0,columnspan=16,sticky="nsew")
-        
+        self.watchedmoviesframe.grid(pady=10,padx=10,row=1,column=0,columnspan=16,sticky="nsew")  
 
 # Frame that has all the watched movies
 class WatchedMoviesFrame(customtkinter.CTkScrollableFrame):
@@ -122,7 +127,6 @@ def MovieCover(label, coverstoragelocation):
     image = Images.open(requests.get(cover_master_location + coverstoragelocation, stream=True).raw)
     cover = customtkinter.CTkImage(image, size=(200,300))
     label.after_idle(lambda: label.configure(image=cover))
-    #return customtkinter.CTkImage(image, size=(200, 300))
         
 # The Movie Preview Claim
 class MoviePreviewWindow(customtkinter.CTkToplevel):
@@ -270,6 +274,78 @@ def BackgroundImage(backgroundlabel, backdrop_path):
     # Now sets the darkend image as the background (CustomTkinter and Tkinter require images to be put as labels for whater stupid reason.
     backgroundimage = customtkinter.CTkImage(image, size=(1280, 720))
     backgroundlabel.after_idle(lambda: backgroundlabel.configure(image=backgroundimage)) # This is so we are threadsafe
+
+# This is so we can see multiple search results
+class SearchWindow(customtkinter.CTkToplevel):
+    def __init__(self, master, searchcontent, search, **kwargs):
+        super().__init__(**kwargs)
+        self.geometry("600x720")
+        self.minsize(600, 720)
+        self.maxsize(600, 720)
+        self.title(f"Search results for: {searchcontent}")
+
+        self.grid_rowconfigure(0, weight=1) # We do this so that when we put the scrollable frame on the grid, it covers the whole window!
+        self.grid_columnconfigure(0, weight=1)
+
+        self.scrollableframe = SearchFrame(master=self, mm=master, search=search, width=600, height=720,corner_radius=0, fg_color="transparent")
+        self.scrollableframe.grid(row=0, column=0, sticky="nsew")
+
+class SearchFrame(customtkinter.CTkScrollableFrame):
+    def __init__(self, master, mm, search, **kwargs):
+        super().__init__(master, **kwargs)
+        
+        for i, movie in enumerate(search):
+            if movie["poster_path"] is None:
+                continue
+            frame = SearchMovieFrame(self, mm, movie, width=580, height=300, corner_radius=20)
+            frame.grid(row=i, padx=10, pady=10)
+
+class SearchMovieFrame(customtkinter.CTkFrame):
+    def __init__(self, master, mmm, movie, **kwargs):
+        super().__init__(master, **kwargs)
+        
+        self.title = customtkinter.CTkTextbox(self, font=("Bahnschrift", 25), width=350, height=20, wrap="none", fg_color="transparent")
+        self.title.insert("0.0", movie["title"])
+        self.title.configure(state="disabled")
+        self.title.place(relx=0.025,rely=0.05)
+        
+        
+        self.releasedate = customtkinter.CTkLabel(self, text=movie["release_date"], font=("Arial", 18))
+        self.releasedate.place(relx=0.05,rely=0.25)
+        
+        self.rating = customtkinter.CTkLabel(self, text=str(round(movie["vote_average"], 1)) + "/10", font=("Arial", 18))
+        self.rating.place(relx=0.25, rely=0.25)
+        
+        self.image = Images.open(os.path.dirname(os.path.realpath(__file__)) + r"\\storage\\unloaded.png")
+        self.ctkimage = customtkinter.CTkImage(self.image, size=(200, 300))
+        self.imagelabel = customtkinter.CTkLabel(self, text="", image=self.ctkimage)
+        self.imagelabel.place(relx=0.64, rely=0)
+
+        
+        self.preview = customtkinter.CTkButton(self, text="👁", font=("Arial", 40), width=100, height=100, corner_radius=30, command=lambda: ClickToPreview(movie["id"]))
+        self.preview.place(relx=0.025,rely=0.6)
+
+        t1 = threading.Thread(target=MovieCover, args=(self.imagelabel, movie["poster_path"]))
+        t1.start()
+
+        def ClickToPreview(id):
+            movie = api.getmovie(id)
+            if movie == False:
+                error("#02")
+                return
+            frame = MoviePreviewWindow(mmm, movie)
+            timer = threading.Timer(0.2, frame.focus)
+            timer.start()
+
+            
+# This window is so the user knows that a search is happening.
+class SearchProgressWindow(customtkinter.CTkToplevel):
+    def __init__(self, master,  **kwargs):
+        super().__init__(master, **kwargs)
+        self.geometry("600x200")
+        self.title("Searching...")
+        self.label = customtkinter.CTkLabel(self, font=("Bahnschrift", 40), text="Searching!")
+        self.label.pack(padx=40,pady=20)
 
 class ErrorWindow(customtkinter.CTkToplevel):
     def __init__(self, *args, **kwargs):
