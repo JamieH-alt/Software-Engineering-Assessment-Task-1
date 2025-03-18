@@ -29,22 +29,29 @@ def searchmovies(content: str):
         for c in movie.countries:
             if c['iso_3166_1'] == 'AU' and c['certification'] != '':
                 match c['certification']:
-                    case "G":
-                        test = True
-                    case "PG":
-                        test = True
-                    case "M":
-                        test = True
-                    case "MA 15+":
-                        test = True
+                    case "R 18+":
+                        results.remove(movies)
+                        break
+                    case "X 18+":
+                        results.remove(movies)
+                        break
+                    case "RC":
+                        results.remove(movies)
+                        break
             elif c['iso_3166_1'] == 'US' and c['certification'] != '':
                 match c['certification']:
-                    case "PG":
-                        test = True
-                    case "PG-13":
-                        test = True
-                    case "G":
-                        test = True
-        if not test:
+                    case "R":
+                        results.remove(movies)
+                        break
+                    case "NC-17":
+                        results.remove(movies)
+                        break
+                    case "NR":
+                        results.remove(movies)
+                        break
+            else:
+                results.remove(movies)
+                break
+        if test:
             results.remove(movies)
     return results

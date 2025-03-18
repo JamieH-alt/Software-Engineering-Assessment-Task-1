@@ -55,12 +55,22 @@ class App(customtkinter.CTk):
             #frame = MoviePreviewWindow(self, movie)
             #timer = threading.Timer(0.2, frame.focus)
             #timer.start()
+
+        def openhelp():
+            window = HelpWindow(self)
+            timer = threading.Timer(0.2, window.focus)
+            timer.start()
+
+        # Creates the Help Button
+        self.helpbutton = customtkinter.CTkButton(master=self,height=50,width=50, font=("Bahnschrift", 76), corner_radius=20, text="help", command=openhelp)
+        self.helpbutton.grid(pady=10,padx=10,row=0,column=0, stick="nw")
             
         self.search.bind('<Return>', moviesearched)
 
         # Loads the WatchedMoviesFrame and sets its size and other variables
         self.watchedmoviesframe = WatchedMoviesFrame(self, width=1100, height=700, corner_radius=20, orientation="horizontal")
         self.watchedmoviesframe.grid(pady=10,padx=10,row=1,column=0,columnspan=16,sticky="nsew")  
+
 
 # Frame that has all the watched movies
 class WatchedMoviesFrame(customtkinter.CTkScrollableFrame):
@@ -346,6 +356,45 @@ class SearchProgressWindow(customtkinter.CTkToplevel):
         self.title("Searching...")
         self.label = customtkinter.CTkLabel(self, font=("Bahnschrift", 40), text="Searching!")
         self.label.pack(padx=40,pady=20)
+
+# Help Window
+class HelpWindow(customtkinter.CTkToplevel):
+    def __init__(self, master, **kwargs):
+        super().__init__(master, **kwargs)
+        self.geometry("1200x675")
+        self.title("Help!")
+
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure(0, weight=1)
+        
+        self.scrollableframe = HelpScroll(master=self, width=1200, height=675, corner_radius=0, fg_color="transparent")
+        self.scrollableframe.grid(row=0, column=0, stick="nsew")
+
+class HelpScroll(customtkinter.CTkScrollableFrame):
+    def __init__(self, master, **kwargs):
+        super().__init__(master, **kwargs)
+        self.label = customtkinter.CTkLabel(self, font=("Bahnschrift", 40), text="How to use MovieLister")
+        self.label.pack(padx=40,pady=20)
+
+        self.image1 = Images.open(os.path.dirname(os.path.realpath(__file__)) + r"\\storage\\MainWindowHelp.png")
+        self.imagectk1 = customtkinter.CTkImage(self.image1, size=(1063, 617))
+        self.image1label = customtkinter.CTkLabel(self, image=self.imagectk1)
+        self.image1label.pack(padx=40,pady=20)
+
+        self.image2 = Images.open(os.path.dirname(os.path.realpath(__file__)) + r"\\storage\\SearchWindowHelp.png")
+        self.imagectk2 = customtkinter.CTkImage(self.image2, size=(393, 496))
+        self.image2label = customtkinter.CTkLabel(self, image=self.imagectk2)
+        self.image2label.pack(padx=40,pady=20)
+
+        self.image3 = Images.open(os.path.dirname(os.path.realpath(__file__)) + r"\\storage\\PreviewWindowHelpAdd.png")
+        self.imagectk3 = customtkinter.CTkImage(self.image3, size=(1063, 617))
+        self.image3label = customtkinter.CTkLabel(self, image=self.imagectk3)
+        self.image3label.pack(padx=40,pady=20)
+
+        self.image4 = Images.open(os.path.dirname(os.path.realpath(__file__)) + r"\\storage\\PreviewWindowHelp.png")
+        self.imagectk4 = customtkinter.CTkImage(self.image4, size=(1063, 617))
+        self.image4label = customtkinter.CTkLabel(self, image=self.imagectk4)
+        self.image4label.pack(padx=40,pady=20)
 
 class ErrorWindow(customtkinter.CTkToplevel):
     def __init__(self, *args, **kwargs):
