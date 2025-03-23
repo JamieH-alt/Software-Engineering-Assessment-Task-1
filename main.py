@@ -13,6 +13,8 @@ import sys
 import platform
 import apiinteractions as api # This is my python API class (module or whatever you want to call it) because it says I have to :/
 import time
+from playsound import playsound
+import time
 
 # Sets the theme / appearance mode, so it doesnt follow the system (Forced dark mode because yes)
 customtkinter.set_default_color_theme("dark-blue")
@@ -62,7 +64,9 @@ class App(customtkinter.CTk):
             timer.start()
 
         def reportwindow():
-            
+            self.reportwindow = ReportWindow(master=self)
+            timer = threading.Timer(0.2, self.reportwindow.focus)
+            timer.start()
             
         self.search.bind('<Return>', moviesearched)
 
@@ -71,28 +75,63 @@ class App(customtkinter.CTk):
         self.watchedmoviesframe.grid(pady=10,padx=10,row=1,column=0,columnspan=16,sticky="nsew")
 
         # Help Button
-        self.helpbutton = customtkinter.CTkButton(master=self, font=("Bahnschrift", 72), text="help", width=100, height=100, corner_radius=15, command=helpwindow)
+        self.helpbutton = customtkinter.CTkButton(master=self, font=("Bahnschrift", 72), text="help", width=200, height=100, corner_radius=15, command=helpwindow)
         self.helpbutton.grid(pady=10,padx=10,row=0,column=0,sticky="nw")
 
         # Report Button
-        self.reportbutton = customtkinter.CTkButton(master=self, font=("Bahnschrift", 72), text="!", width=100, height=100, corner_radius=15, fg_color="#a43c3c", hover_color="#912424")
+        self.reportbutton = customtkinter.CTkButton(master=self, font=("Bahnschrift", 72), text="!", command=reportwindow, width=100, height=100, corner_radius=15, fg_color="#a43c3c", hover_color="#912424")
         self.reportbutton.grid(pady=10,padx=10,row=0,column=1,sticky="ne")
 
 # Report Window
-class SearchWindow(customtkinter.CTkToplevel):
-    def __init__(self, master, searchcontent, search, **kwargs):
-        super().__init__(**kwargs)
+class ReportWindow(customtkinter.CTkToplevel):
+    def __init__(self, master, **kwargs):
+        super().__init__(master, **kwargs)
         self.geometry("600x720")
         self.minsize(600, 720)
         self.maxsize(600, 720)
-        self.title(f"Search results for: {searchcontent}")
+        self.title("Report A Problem! (I care sooo much)")
 
-        self.grid_rowconfigure(0, weight=1) # We do this so that when we put the scrollable frame on the grid, it covers the whole window!
-        self.grid_columnconfigure(0, weight=1)
+        self.textbox = customtkinter.CTkTextbox(self, width=600, height=620)
+        self.textbox.pack()
+        self.textbox.insert("0.0", "Fill in only the revelant fields\nMovie Title: \nTMDb ID: \nError Code: (If none leave blank) \n\nDescribe the issue and how we could fix it below: ")
 
-        self.scrollableframe = SearchFrame(master=self, mm=master, search=search, width=600, height=720,corner_radius=0, fg_color="transparent")
-        self.scrollableframe.grid(row=0, column=0, sticky="nsew")
+        def reportFiled():
+            T = threading.Thread(target=playShreddingSoundFx)
+            T.start()
+            reportFiledWindow = ReportFiledWindow(master=master)
+            T1 = threading.Thread(target=lambda: shredprogram(720, self))
+            T1.start()
+        self.submit = customtkinter.CTkButton(self, width=600, height=75, font=("Bahnschrift", 60), text="Submit", command=reportFiled)
+        self.submit.pack()
 
+def playShreddingSoundFx(): # This function is outside of the class so we can use multithreading to have it run without blocking the program.
+    print("Shredding Report")
+    playsound(os.path.dirname(os.path.realpath(__file__)) + r"\\storage\\papershredder.mp3")
+    print('Finished Shredding Report !!!')
+
+# Report Filed Window
+class ReportFiledWindow(customtkinter.CTkToplevel):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.geometry("600x200")
+        self.minsize(600, 200)
+        self.maxsize(600, 200)
+        self.title("Report Filed Window!")
+        self.label = customtkinter.CTkLabel(self, font=("Bahnschrift", 30), text="Report Filed!")
+        self.label.pack(padx=20,pady=20)
+        self.button = customtkinter.CTkButton(self, font=("Bahnschrift", 30), text="Ok", command=self.destroy)
+        self.button.pack(padx=20,pady=20)
+
+# Shredder
+def shredprogram(startvalue: int, window):
+    for i in range(0, math.floor(startvalue / 10)):
+        value = startvalue - (i * 10)
+        window.minsize(600, value)
+        window.maxsize(600, value)
+        window.geometry(f"600x{value}")
+        time.sleep(0.08)
+    window.destroy()
+        
 # Help window
 class HelpWindow(customtkinter.CTkToplevel):
     def __init__(self, master, **kwargs):
@@ -100,7 +139,7 @@ class HelpWindow(customtkinter.CTkToplevel):
         self.geometry("1280x720")
         self.minsize(1280, 720)
         self.maxsize(1280, 720)
-        self.title("Help, I need somebody! Help! Not just anybody, Help! I need someone-...")
+        self.title("I need somebody (Help) not just anybody (Help) you know I need someone, help So much younger than today (I never need) I never needed anybodys help in any way (Now) but now these days are gone (these days are gone) Im not so self assured(And now I find) now I find Ive changed my mindAnd opened up the doors")
 
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1) # This allows us to have a full window of scrollable frame
@@ -221,19 +260,7 @@ class MoviePreviewWindow(customtkinter.CTkToplevel):
 
         # Now Sets up the title display etc.
         self.titlelabel = customtkinter.CTkTextbox(self.backgroundlabel, font=("Bahnschrift", 55), width=700, height=50, fg_color="#282828", wrap="none")
-        self.titlelabel.iclass SearchWindow(customtkinter.CTkToplevel):
-    def __init__(self, master, searchcontent, search, **kwargs):
-        super().__init__(**kwargs)
-        self.geometry("600x720")
-        self.minsize(600, 720)
-        self.maxsize(600, 720)
-        self.title(f"Search results for: {searchcontent}")
-
-        self.grid_rowconfigure(0, weight=1) # We do this so that when we put the scrollable frame on the grid, it covers the whole window!
-        self.grid_columnconfigure(0, weight=1)
-
-        self.scrollableframe = SearchFrame(master=self, mm=master, search=search, width=600, height=720,corner_radius=0, fg_color="transparent")
-        self.scrollableframe.grid(row=0, column=0, sticky="nsew")nsert("0.0", text=movie['title'])
+        self.titlelabel.insert("0.0", text=movie['title'])
         self.titlelabel.configure(state="disabled")
         self.titlelabel.place(relx=0.025,rely=0.1)
 
@@ -248,19 +275,7 @@ class MoviePreviewWindow(customtkinter.CTkToplevel):
         self.overview.place(relx=0.025,rely=0.21)
 
         # Setting up the cover image
-        self.cover = Imagclass SearchWindow(customtkinter.CTkToplevel):
-    def __init__(self, master, searchcontent, search, **kwargs):
-        super().__init__(**kwargs)
-        self.geometry("600x720")
-        self.minsize(600, 720)
-        self.maxsize(600, 720)
-        self.title(f"Search results for: {searchcontent}")
-
-        self.grid_rowconfigure(0, weight=1) # We do this so that when we put the scrollable frame on the grid, it covers the whole window!
-        self.grid_columnconfigure(0, weight=1)
-
-        self.scrollableframe = SearchFrame(master=self, mm=master, search=search, width=600, height=720,corner_radius=0, fg_color="transparent")
-        self.scrollableframe.grid(row=0, column=0, sticky="nsew")es.open(os.path.dirname(os.path.realpath(__file__)) + r"\\storage\\unloaded.png")
+        self.cover = Images.open(os.path.dirname(os.path.realpath(__file__)) + r"\\storage\\unloaded.png")
         self.coverctk = customtkinter.CTkImage(self.cover, size=(200, 300))
         self.coverlabel = customtkinter.CTkLabel(self.backgroundlabel, text="", image=self.coverctk)
         self.coverlabel.place(relx=0.8,rely=0.1)
