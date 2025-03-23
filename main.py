@@ -55,12 +55,85 @@ class App(customtkinter.CTk):
             #frame = MoviePreviewWindow(self, movie)
             #timer = threading.Timer(0.2, frame.focus)
             #timer.start()
+
+        def helpwindow():
+            self.helpwindow = HelpWindow(master=self)
+            timer = threading.Timer(0.2, self.helpwindow.focus)
+            timer.start()
+
+        def reportwindow():
+            
             
         self.search.bind('<Return>', moviesearched)
 
         # Loads the WatchedMoviesFrame and sets its size and other variables
         self.watchedmoviesframe = WatchedMoviesFrame(self, width=1100, height=700, corner_radius=20, orientation="horizontal")
-        self.watchedmoviesframe.grid(pady=10,padx=10,row=1,column=0,columnspan=16,sticky="nsew")  
+        self.watchedmoviesframe.grid(pady=10,padx=10,row=1,column=0,columnspan=16,sticky="nsew")
+
+        # Help Button
+        self.helpbutton = customtkinter.CTkButton(master=self, font=("Bahnschrift", 72), text="help", width=100, height=100, corner_radius=15, command=helpwindow)
+        self.helpbutton.grid(pady=10,padx=10,row=0,column=0,sticky="nw")
+
+        # Report Button
+        self.reportbutton = customtkinter.CTkButton(master=self, font=("Bahnschrift", 72), text="!", width=100, height=100, corner_radius=15, fg_color="#a43c3c", hover_color="#912424")
+        self.reportbutton.grid(pady=10,padx=10,row=0,column=1,sticky="ne")
+
+# Report Window
+class SearchWindow(customtkinter.CTkToplevel):
+    def __init__(self, master, searchcontent, search, **kwargs):
+        super().__init__(**kwargs)
+        self.geometry("600x720")
+        self.minsize(600, 720)
+        self.maxsize(600, 720)
+        self.title(f"Search results for: {searchcontent}")
+
+        self.grid_rowconfigure(0, weight=1) # We do this so that when we put the scrollable frame on the grid, it covers the whole window!
+        self.grid_columnconfigure(0, weight=1)
+
+        self.scrollableframe = SearchFrame(master=self, mm=master, search=search, width=600, height=720,corner_radius=0, fg_color="transparent")
+        self.scrollableframe.grid(row=0, column=0, sticky="nsew")
+
+# Help window
+class HelpWindow(customtkinter.CTkToplevel):
+    def __init__(self, master, **kwargs):
+        super().__init__(master, **kwargs)
+        self.geometry("1280x720")
+        self.minsize(1280, 720)
+        self.maxsize(1280, 720)
+        self.title("Help, I need somebody! Help! Not just anybody, Help! I need someone-...")
+
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure(0, weight=1) # This allows us to have a full window of scrollable frame
+
+        self.scrollableframe = HelpFrame(master=self, width=1280, height=720)
+        self.scrollableframe.grid(row=0, column=0, sticky="nsew")
+
+# Help Frame (Scollable frame just to chuck the images on)
+class HelpFrame(customtkinter.CTkScrollableFrame):
+    def __init__(self, master, **kwargs):
+        super().__init__(master, **kwargs)
+
+        image1 = Images.open(os.path.dirname(os.path.realpath(__file__)) + r"\\storage\\MainWindowHelp.png")
+        ctkimage1 = customtkinter.CTkImage(image1, size=(994, 576))
+        ctklabel1 = customtkinter.CTkLabel(image=ctkimage1, text="", master=self)
+        ctklabel1.pack(padx=10,pady=10)
+
+        image2 = Images.open(os.path.dirname(os.path.realpath(__file__)) + r"\\storage\\SearchWindowHelp.png")
+        ctkimage2 = customtkinter.CTkImage(image2, size=(590, 745))
+        ctklabel2 = customtkinter.CTkLabel(image=ctkimage2, text="", master=self)
+        ctklabel2.pack(padx=10,pady=10)
+
+        image3 = Images.open(os.path.dirname(os.path.realpath(__file__)) + r"\\storage\\PreviewWindowHelpAdd.png")
+        ctkimage3 = customtkinter.CTkImage(image3, size=(994, 576))
+        ctklabel3 = customtkinter.CTkLabel(image=ctkimage3, text="", master=self)
+        ctklabel3.pack(padx=10,pady=10)
+
+        image4 = Images.open(os.path.dirname(os.path.realpath(__file__)) + r"\\storage\\PreviewWindowHelp.png")
+        ctkimage4 = customtkinter.CTkImage(image4, size=(994, 576))
+        ctklabel4 = customtkinter.CTkLabel(image=ctkimage4, text="", master=self)
+        ctklabel4.pack(padx=10,pady=10)
+        
+        
 
 # Frame that has all the watched movies
 class WatchedMoviesFrame(customtkinter.CTkScrollableFrame):
@@ -148,7 +221,19 @@ class MoviePreviewWindow(customtkinter.CTkToplevel):
 
         # Now Sets up the title display etc.
         self.titlelabel = customtkinter.CTkTextbox(self.backgroundlabel, font=("Bahnschrift", 55), width=700, height=50, fg_color="#282828", wrap="none")
-        self.titlelabel.insert("0.0", text=movie['title'])
+        self.titlelabel.iclass SearchWindow(customtkinter.CTkToplevel):
+    def __init__(self, master, searchcontent, search, **kwargs):
+        super().__init__(**kwargs)
+        self.geometry("600x720")
+        self.minsize(600, 720)
+        self.maxsize(600, 720)
+        self.title(f"Search results for: {searchcontent}")
+
+        self.grid_rowconfigure(0, weight=1) # We do this so that when we put the scrollable frame on the grid, it covers the whole window!
+        self.grid_columnconfigure(0, weight=1)
+
+        self.scrollableframe = SearchFrame(master=self, mm=master, search=search, width=600, height=720,corner_radius=0, fg_color="transparent")
+        self.scrollableframe.grid(row=0, column=0, sticky="nsew")nsert("0.0", text=movie['title'])
         self.titlelabel.configure(state="disabled")
         self.titlelabel.place(relx=0.025,rely=0.1)
 
@@ -163,7 +248,19 @@ class MoviePreviewWindow(customtkinter.CTkToplevel):
         self.overview.place(relx=0.025,rely=0.21)
 
         # Setting up the cover image
-        self.cover = Images.open(os.path.dirname(os.path.realpath(__file__)) + r"\\storage\\unloaded.png")
+        self.cover = Imagclass SearchWindow(customtkinter.CTkToplevel):
+    def __init__(self, master, searchcontent, search, **kwargs):
+        super().__init__(**kwargs)
+        self.geometry("600x720")
+        self.minsize(600, 720)
+        self.maxsize(600, 720)
+        self.title(f"Search results for: {searchcontent}")
+
+        self.grid_rowconfigure(0, weight=1) # We do this so that when we put the scrollable frame on the grid, it covers the whole window!
+        self.grid_columnconfigure(0, weight=1)
+
+        self.scrollableframe = SearchFrame(master=self, mm=master, search=search, width=600, height=720,corner_radius=0, fg_color="transparent")
+        self.scrollableframe.grid(row=0, column=0, sticky="nsew")es.open(os.path.dirname(os.path.realpath(__file__)) + r"\\storage\\unloaded.png")
         self.coverctk = customtkinter.CTkImage(self.cover, size=(200, 300))
         self.coverlabel = customtkinter.CTkLabel(self.backgroundlabel, text="", image=self.coverctk)
         self.coverlabel.place(relx=0.8,rely=0.1)
