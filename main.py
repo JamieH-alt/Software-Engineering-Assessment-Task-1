@@ -354,6 +354,39 @@ class MoviePreviewWindow(customtkinter.CTkToplevel):
         self.tmdbidlabel.configure(state="disabled")
         self.tmdbidlabel.place(relx=0.025,rely=0.7)
 
+        # Sets up the watch location display
+        self.wdframe = customtkinter.CTkScrollableFrame(self.backgroundlabel, orientation="horizontal", width=500, height=125, fg_color="#282828")
+        self.wdframe.place(relx=0.025,rely=0.775)
+        moviewatchproviders = api.watchproviders(movie["id"])
+        try:
+            buy = moviewatchproviders["buy"]
+            self.buylabel = customtkinter.CTkLabel(master=self.wdframe, text="Buy: ", font=("Bahnschrift", 25))
+            for e, i in enumerate(buy, start=1):
+                image = Images.open(os.path.dirname(os.path.realpath(__file__)) + r"\\storage\\empty_icon.png")
+                ctkimage = customtkinter.CTkImage(image, size=(50,50))
+                ctklabel = customtkinter.CTkLabel(master=self.wdframe, image=ctkimage,text="")
+                ctklabel.grid(row=0,column=e,padx=5)
+                T = threading.Thread(target=lambda: streamingIcon(ctklabel, i["logo_path"]))
+                T.start()
+        except:
+            self.buylabel = customtkinter.CTkLabel(master=self.wdframe, text="Buy: Not Available", font=("Bahnschrift", 25))
+        try:
+            rent = moviewatchproviders["flatrate"]
+            self.rentlabel = customtkinter.CTkLabel(master=self.wdframe, text="Stream: ", font=("Bahnschrift", 25))
+            for e, i in enumerate(rent, start=1):
+                rimage = Images.open(os.path.dirname(os.path.realpath(__file__)) + r"\\storage\\empty_icon.png")
+                rctkimage = customtkinter.CTkImage(rimage, size=(50,50))
+                rctklabel = customtkinter.CTkLabel(master=self.wdframe, image=rctkimage,text="")
+                rctklabel.grid(row=1,column=e,padx=5,pady=10)
+                T = threading.Thread(target=lambda: streamingIcon(rctklabel, i["logo_path"]))
+                T.start()
+        except:
+            self.rentlabel = customtkinter.CTkLabel(master=self.wdframe, text="Stream: Not Available", font=("Bahnschrift", 25))
+        self.buylabel.grid(row=0,column=0,padx=5,sticky="w")
+        self.rentlabel.grid(row=1,column=0,padx=5,pady=10,sticky="w")
+        
+        
+
         # Sets up the button that will let us add this to the watched movies list
         if not HasMovie(movie["id"]):
             self.addmoviebutton = customtkinter.CTkButton(self.backgroundlabel, font=("Bahnscrhift", 18), text="Add to WatchList!", width=200, corner_radius=0, command=lambda: AddMovie(StoredMovie(movie["title"], movie["id"], movie["poster_path"]), self, master))
@@ -369,6 +402,13 @@ class MoviePreviewWindow(customtkinter.CTkToplevel):
         pywinstyles.set_opacity(self.genrelabel, value=0.8)
         pywinstyles.set_opacity(self.releaselabel, value=0.8)
         pywinstyles.set_opacity(self.tmdbidlabel, value=0.8)
+
+# Another function again dedicated to manipulating stuff on threads
+def streamingIcon(iconlabel, icon_path):
+    location = 'https://image.tmdb.org/t/p/original/'
+    image = Images.open(requests.get(location + icon_path, stream=True).raw)
+    ctkimage = customtkinter.CTkImage(image, size=(50,50))
+    iconlabel.after_idle(lambda: iconlabel.configure(image=ctkimage))
 
 # Another function dedicated to manipulating stuff on threads.
 def BackgroundImage(backgroundlabel, backdrop_path):

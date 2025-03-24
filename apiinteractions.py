@@ -1,4 +1,5 @@
 import tmdbsimple as tmdb
+import requests
 import customtkinter
 
 tmdb.API_KEY = '8295c16817d7dbb5f94ba36baa7c04cf'
@@ -48,3 +49,11 @@ def searchmovies(content: str):
         if not test:
             results.remove(movies)
     return results
+
+def watchproviders(tmdbid: int):
+    movie = tmdb.Movies(tmdbid)
+    response = movie.info()
+    try:
+        return movie.watch_providers()["results"]["AU"]
+    except:
+        return False
