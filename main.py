@@ -13,6 +13,8 @@ import sys
 import platform
 import apiinteractions as api # This is my python API class (module or whatever you want to call it) because it says I have to :/
 import time
+from playsound import playsound
+import time
 
 # Sets the theme / appearance mode, so it doesnt follow the system (Forced dark mode because yes)
 customtkinter.set_default_color_theme("dark-blue")
@@ -55,12 +57,122 @@ class App(customtkinter.CTk):
             #frame = MoviePreviewWindow(self, movie)
             #timer = threading.Timer(0.2, frame.focus)
             #timer.start()
+
+        def helpwindow():
+            self.helpwindow = HelpWindow(master=self)
+            timer = threading.Timer(0.2, self.helpwindow.focus)
+            timer.start()
+
+        def reportwindow():
+            self.reportwindow = ReportWindow(master=self)
+            timer = threading.Timer(0.2, self.reportwindow.focus)
+            timer.start()
             
         self.search.bind('<Return>', moviesearched)
 
         # Loads the WatchedMoviesFrame and sets its size and other variables
         self.watchedmoviesframe = WatchedMoviesFrame(self, width=1100, height=700, corner_radius=20, orientation="horizontal")
-        self.watchedmoviesframe.grid(pady=10,padx=10,row=1,column=0,columnspan=16,sticky="nsew")  
+        self.watchedmoviesframe.grid(pady=10,padx=10,row=1,column=0,columnspan=16,sticky="nsew")
+
+        # Help Button
+        self.helpbutton = customtkinter.CTkButton(master=self, font=("Bahnschrift", 72), text="help", width=200, height=100, corner_radius=15, command=helpwindow)
+        self.helpbutton.grid(pady=10,padx=10,row=0,column=0,sticky="nw")
+
+        # Report Button
+        self.reportbutton = customtkinter.CTkButton(master=self, font=("Bahnschrift", 72), text="!", command=reportwindow, width=100, height=100, corner_radius=15, fg_color="#a43c3c", hover_color="#912424")
+        self.reportbutton.grid(pady=10,padx=10,row=0,column=1,sticky="ne")
+
+# Report Window
+class ReportWindow(customtkinter.CTkToplevel):
+    def __init__(self, master, **kwargs):
+        super().__init__(master, **kwargs)
+        self.geometry("600x720")
+        self.minsize(600, 720)
+        self.maxsize(600, 720)
+        self.title("Report A Problem! (I care sooo much)")
+
+        self.textbox = customtkinter.CTkTextbox(self, width=600, height=620)
+        self.textbox.pack()
+        self.textbox.insert("0.0", "Fill in only the revelant fields\nMovie Title: \nTMDb ID: \nError Code: (If none leave blank) \n\nDescribe the issue and how we could fix it below: ")
+
+        def reportFiled():
+            T = threading.Thread(target=playShreddingSoundFx)
+            T.start()
+            reportFiledWindow = ReportFiledWindow(master=master)
+            T1 = threading.Thread(target=lambda: shredprogram(720, self))
+            T1.start()
+        self.submit = customtkinter.CTkButton(self, width=600, height=75, font=("Bahnschrift", 60), text="Submit", command=reportFiled)
+        self.submit.pack()
+
+def playShreddingSoundFx(): # This function is outside of the class so we can use multithreading to have it run without blocking the program.
+    print("Shredding Report")
+    playsound(os.path.dirname(os.path.realpath(__file__)) + r"\\storage\\papershredder.mp3")
+    print('Finished Shredding Report !!!')
+
+# Report Filed Window
+class ReportFiledWindow(customtkinter.CTkToplevel):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.geometry("600x200")
+        self.minsize(600, 200)
+        self.maxsize(600, 200)
+        self.title("Report Filed Window!")
+        self.label = customtkinter.CTkLabel(self, font=("Bahnschrift", 30), text="Report Filed!")
+        self.label.pack(padx=20,pady=20)
+        self.button = customtkinter.CTkButton(self, font=("Bahnschrift", 30), text="Ok", command=self.destroy)
+        self.button.pack(padx=20,pady=20)
+
+# Shredder
+def shredprogram(startvalue: int, window):
+    for i in range(0, math.floor(startvalue / 10)):
+        value = startvalue - (i * 10)
+        window.minsize(600, value)
+        window.maxsize(600, value)
+        window.geometry(f"600x{value}")
+        time.sleep(0.08)
+    window.destroy()
+        
+# Help window
+class HelpWindow(customtkinter.CTkToplevel):
+    def __init__(self, master, **kwargs):
+        super().__init__(master, **kwargs)
+        self.geometry("1280x720")
+        self.minsize(1280, 720)
+        self.maxsize(1280, 720)
+        self.title("I need somebody (Help) not just anybody (Help) you know I need someone, help So much younger than today (I never need) I never needed anybodys help in any way (Now) but now these days are gone (these days are gone) Im not so self assured(And now I find) now I find Ive changed my mindAnd opened up the doors")
+
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure(0, weight=1) # This allows us to have a full window of scrollable frame
+
+        self.scrollableframe = HelpFrame(master=self, width=1280, height=720)
+        self.scrollableframe.grid(row=0, column=0, sticky="nsew")
+
+# Help Frame (Scollable frame just to chuck the images on)
+class HelpFrame(customtkinter.CTkScrollableFrame):
+    def __init__(self, master, **kwargs):
+        super().__init__(master, **kwargs)
+
+        image1 = Images.open(os.path.dirname(os.path.realpath(__file__)) + r"\\storage\\MainWindowHelp.png")
+        ctkimage1 = customtkinter.CTkImage(image1, size=(994, 576))
+        ctklabel1 = customtkinter.CTkLabel(image=ctkimage1, text="", master=self)
+        ctklabel1.pack(padx=10,pady=10)
+
+        image2 = Images.open(os.path.dirname(os.path.realpath(__file__)) + r"\\storage\\SearchWindowHelp.png")
+        ctkimage2 = customtkinter.CTkImage(image2, size=(590, 745))
+        ctklabel2 = customtkinter.CTkLabel(image=ctkimage2, text="", master=self)
+        ctklabel2.pack(padx=10,pady=10)
+
+        image3 = Images.open(os.path.dirname(os.path.realpath(__file__)) + r"\\storage\\PreviewWindowHelpAdd.png")
+        ctkimage3 = customtkinter.CTkImage(image3, size=(994, 576))
+        ctklabel3 = customtkinter.CTkLabel(image=ctkimage3, text="", master=self)
+        ctklabel3.pack(padx=10,pady=10)
+
+        image4 = Images.open(os.path.dirname(os.path.realpath(__file__)) + r"\\storage\\PreviewWindowHelp.png")
+        ctkimage4 = customtkinter.CTkImage(image4, size=(994, 576))
+        ctklabel4 = customtkinter.CTkLabel(image=ctkimage4, text="", master=self)
+        ctklabel4.pack(padx=10,pady=10)
+        
+        
 
 # Frame that has all the watched movies
 class WatchedMoviesFrame(customtkinter.CTkScrollableFrame):
