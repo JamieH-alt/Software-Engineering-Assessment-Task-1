@@ -109,7 +109,7 @@ def playShreddingSoundFx(): # This function is outside of the class so we can us
     playsound(os.path.dirname(os.path.realpath(__file__)) + r"\\storage\\papershredder.mp3")
     print('Finished Shredding Report !!!')
 
-# Report Filed Window
+# Report Filed Window alerts the user report is filed
 class ReportFiledWindow(customtkinter.CTkToplevel):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -119,6 +119,8 @@ class ReportFiledWindow(customtkinter.CTkToplevel):
         self.title("Report Filed Window!")
         self.label = customtkinter.CTkLabel(self, font=("Bahnschrift", 30), text="Report Filed!")
         self.label.pack(padx=20,pady=20)
+        self.label2 = customtkinter.CTkLabel(self, font=("Bahnschrift", 24), text="You're feedback is valuable")
+        self.label2.pack(padx=20,pady=5)
         self.button = customtkinter.CTkButton(self, font=("Bahnschrift", 30), text="Ok", command=self.destroy)
         self.button.pack(padx=20,pady=20)
 
@@ -499,7 +501,7 @@ class SearchProgressWindow(customtkinter.CTkToplevel):
         self.label = customtkinter.CTkLabel(self, font=("Bahnschrift", 40), text="Searching!")
         self.label.pack(padx=40,pady=20)
 
-class ErrorWindow(customtkinter.CTkToplevel):
+class ErrorWindow(customtkinter.CTkToplevel): # This window just alerts of an error in the case of an unfound search
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.geometry("600x200")
